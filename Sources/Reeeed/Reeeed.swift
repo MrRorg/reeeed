@@ -63,14 +63,14 @@ public enum Reeeed {
     }
 
     public static func fetchAndExtractContent(fromURL url: URL, extractor: Extractor = .mercury) async throws -> ReadableDoc {
-        DispatchQueue.main.async { Reeeed.warmup() }
+        DispatchQueue.main.async { Reeeed.warmup(extractor: extractor) }
         
         let (data, response) = try await URLSession.shared.data(from: url)
         guard let html = String(data: data, encoding: .utf8) else {
             throw ExtractionError.DataIsNotString
         }
         let baseURL = response.url ?? url
-        let content = try await Reeeed.extractArticleContent(url: baseURL, html: html)
+        let content = try await Reeeed.extractArticleContent(url: baseURL, html: html, extractor: extractor)
         let extractedMetadata = try? await SiteMetadata.extractMetadata(fromHTML: html, baseURL: baseURL)
         guard let doc =  ReadableDoc(
             extracted: content,
