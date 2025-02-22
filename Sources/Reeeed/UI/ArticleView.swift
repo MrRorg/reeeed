@@ -25,7 +25,7 @@ public struct ArticleView: View {
     
     public var body: some View {
         content
-            .ignoresSafeArea(.all)
+//            .ignoresSafeArea(.all)
     }
     
     @ViewBuilder
