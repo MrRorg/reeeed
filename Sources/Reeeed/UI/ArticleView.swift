@@ -82,6 +82,13 @@ private struct ReaderView: View {
     @State private var status: ReaderViewStatus = .fetching
     @StateObject private var content = WebContent(transparent: true)
     
+    init(url: URL, viewState: Binding<ArticleViewState>, theme: ReaderTheme, onLinkClicked: @escaping (URL) -> Void) {
+        self.url = url
+        self._viewState = viewState
+        self.theme = theme
+        self.onLinkClicked = onLinkClicked
+    }
+    
     var body: some View {
         WebView(content: content)
             .overlay {
@@ -101,8 +108,10 @@ private struct ReaderView: View {
                         content.load(html: html, baseURL: result.url)
                     }
                 } catch {
-                    self.status = .failed
-                    self.viewState = .fallbackWeb
+                    if await !Task.isCancelled {
+                        self.status = .failed
+                        self.viewState = .fallbackWeb
+                    }
                 }
             }
     }
