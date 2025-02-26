@@ -25,7 +25,7 @@ public struct ArticleView: View {
     
     public var body: some View {
         content
-            .ignoresSafeArea(edges: .all)
+//            .ignoresSafeArea(edges: .all)
     }
     
     @ViewBuilder
@@ -55,6 +55,7 @@ private struct WebPageView: View {
     
     var body: some View {
         WebView(content: content)
+            .ignoresSafeArea(edges: .all)
             .onAppear {
                 content.populate { content in
                     content.load(url: url)
@@ -91,6 +92,7 @@ private struct ReaderView: View {
     
     var body: some View {
         WebView(content: content)
+            .ignoresSafeArea(edges: .all)
             .overlay {
                 if status != .extracted {
                     ReaderPlaceholder(theme: theme)
