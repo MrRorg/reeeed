@@ -71,7 +71,7 @@ private struct WebPageView: View {
 
 private enum ReaderViewStatus: Equatable {
     case fetching, failed
-    case extracted
+    case extracted(ReadableDoc)
 }
 
 private struct ReaderView: View {
@@ -94,7 +94,7 @@ private struct ReaderView: View {
         WebView(content: content)
             .ignoresSafeArea(edges: .all)
             .overlay {
-                if status != .extracted {
+                if status == .fetching {
                     ReaderPlaceholder(theme: theme)
                 }
             }
@@ -104,8 +104,8 @@ private struct ReaderView: View {
             .task(id: url) {
                 do {
                     var result = try await Reeeed.fetchAndExtractContent(fromURL: url)
+                    self.status = .extracted(result)
                     var html = result.html(includeExitReaderButton: false, theme: theme)
-                    self.status = .extracted
                     content.populate { content in
                         content.load(html: html, baseURL: result.url)
                     }
@@ -113,6 +113,14 @@ private struct ReaderView: View {
                     if await !Task.isCancelled {
                         self.status = .failed
                         self.viewState = .fallbackWeb
+                    }
+                }
+            }
+            .onChange(of: theme) { oldValue, newValue in
+                if case .extracted(let readableDoc) = status {
+                    var html = readableDoc.html(includeExitReaderButton: false, theme: theme)
+                    content.populate { content in
+                        content.load(html: html, baseURL: readableDoc.url)
                     }
                 }
             }

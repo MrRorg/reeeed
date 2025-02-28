@@ -15,6 +15,12 @@ public struct ReaderTheme {
     public var background2: UINSColor // used for buttons
     public var link: UINSColor
     public var additionalCSS: String?
+    
+    public var fontName: String
+    public var fontSize: Int
+    public var isBold: Bool
+    public var lineHeight: CGFloat
+    
 
     public init(
         foreground: UINSColor = .reader_Primary,
@@ -22,6 +28,10 @@ public struct ReaderTheme {
         background: UINSColor = .reader_Background,
         background2: UINSColor = .reader_Background2,
         link: UINSColor = .systemBlue,
+        fontName: String = "system-ui",
+        fontSize: Int = 16,
+        isBold: Bool = false,
+        lineHeight: CGFloat = 1.5,
         additionalCSS: String? = nil
     ) {
         self.foreground = foreground
@@ -29,6 +39,10 @@ public struct ReaderTheme {
         self.background = background
         self.background2 = background2
         self.link = link
+        self.fontName = fontName
+        self.fontSize = fontSize
+        self.isBold = isBold
+        self.lineHeight = lineHeight
         self.additionalCSS = additionalCSS
     }
 }
@@ -46,3 +60,5 @@ public extension UINSColor {
     static let reader_Background2 = UIColor.secondarySystemBackground
 #endif
 }
+
+extension ReaderTheme: Equatable {}

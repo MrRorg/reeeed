@@ -94,7 +94,9 @@ extension ReaderTheme {
             color: \(fgLight);
             background-color: \(bgLight);
             overflow-wrap: break-word;
-            font: -apple-system-body;
+            font-family: \(fontName);
+            font-size: \(fontSize)px;
+            font-weight: \(isBold ? "bold" : "normal");
         }
 
         .__hero {
@@ -108,13 +110,13 @@ extension ReaderTheme {
         }
 
         #__content {
-            line-height: 1.5;
-            font-size: 1.1em;
+            line-height: \(lineHeight);
+            font-size: 1.0em;
             overflow-x: hidden;
         }
 
         @media screen and (min-width: 650px) {
-            #__content { font-size: 1.35em; line-height: 1.5; }
+            #__content { font-size: 1.0em; line-height: \(lineHeight); }
         }
 
         h1, h2, h3, h4, h5, h6 {
