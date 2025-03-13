@@ -62,3 +62,46 @@ public extension UINSColor {
 }
 
 extension ReaderTheme: Equatable {}
+
+extension ReaderTheme: Codable {
+    enum CodingKeys: String,CodingKey {
+        case fontName, fontSize, isBold, lineHeight, additionalCSS
+    }
+    
+    public init(from decoder: any Decoder) throws {
+        foreground = .reader_Primary
+        foreground2 = .reader_Secondary
+        background = .reader_Background
+        background2 = .reader_Background2
+        link = .systemBlue
+        
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.fontName = try container.decode(String.self, forKey: .fontName)
+        self.fontSize = try container.decode(Int.self, forKey: .fontSize)
+        self.isBold = try container.decode(Bool.self, forKey: .isBold)
+        self.lineHeight = try container.decode(CGFloat.self, forKey: .lineHeight)
+        self.additionalCSS = try container.decodeIfPresent(String.self, forKey: .additionalCSS) ?? ""
+    }
+    
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.fontName, forKey: .fontName)
+        try container.encode(self.fontSize, forKey: .fontSize)
+        try container.encode(self.isBold, forKey: .isBold)
+        try container.encode(self.lineHeight, forKey: .lineHeight)
+        try container.encodeIfPresent(self.additionalCSS, forKey: .additionalCSS)
+    }
+}
+
+extension ReaderTheme: RawRepresentable {
+    public init?(rawValue: String) {
+        self = (try? JSONDecoder().decode(ReaderTheme.self, from: rawValue.data(using: .utf8) ?? Data())) ?? .init()
+    }
+    
+    public var rawValue: String {
+        let data = try? JSONEncoder().encode(self)
+        return String(data: data ?? Data(), encoding: .utf8) ?? ""
+    }
+}
+
+
