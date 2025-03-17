@@ -14,7 +14,7 @@ public enum ArticleViewState: String {
 public struct ArticleView: View {
     var url: URL
     var theme: ReaderTheme = .init()
-    var onLinkClicked: ((URL) -> Void)?
+    var onLinkClicked: ((URL) -> Bool)?
     @Binding var viewState: ArticleViewState
     
     public init(url: URL, viewState: Binding<ArticleViewState> = .constant(.web)) {
@@ -33,15 +33,15 @@ public struct ArticleView: View {
         switch viewState {
         case .web:
             WebPageView(url: url) { url in
-                onLinkClicked?(url)
+                onLinkClicked?(url) ?? false
             }
         case .reader:
             ReaderView(url: url, viewState: $viewState, theme: theme) { url in
-                onLinkClicked?(url)
+                onLinkClicked?(url) ?? false
             }
         case .fallbackWeb:
             WebPageView(url: url) { url in
-                onLinkClicked?(url)
+                onLinkClicked?(url) ?? false
             }
         }
     }
@@ -49,7 +49,7 @@ public struct ArticleView: View {
 
 private struct WebPageView: View {
     var url: URL
-    var onLinkClicked: (URL) -> Void
+    var onLinkClicked: (URL) -> Bool
     
     @StateObject private var content = WebContent()
     
@@ -57,6 +57,7 @@ private struct WebPageView: View {
         WebView(content: content)
             .ignoresSafeArea(edges: .all)
             .onAppear {
+                setupLinkNavigation()
                 content.populate { content in
                     content.load(url: url)
                 }
@@ -66,6 +67,16 @@ private struct WebPageView: View {
                     content.load(url: url)
                 }
             }
+    }
+    
+    private func setupLinkNavigation() -> Void {
+        content.shouldBlockNavigation = { request -> Bool in
+            if request.navigationType == .linkActivated, let url = request.request.url {
+                return !onLinkClicked(url)
+            }
+            
+            return false
+        }
     }
 }
 
@@ -78,12 +89,12 @@ private struct ReaderView: View {
     var url: URL
     @Binding var viewState: ArticleViewState
     var theme: ReaderTheme
-    var onLinkClicked: (URL) -> Void
+    var onLinkClicked: (URL) -> Bool
     
     @State private var status: ReaderViewStatus = .fetching
     @StateObject private var content = WebContent(transparent: true)
     
-    init(url: URL, viewState: Binding<ArticleViewState>, theme: ReaderTheme, onLinkClicked: @escaping (URL) -> Void) {
+    init(url: URL, viewState: Binding<ArticleViewState>, theme: ReaderTheme, onLinkClicked: @escaping (URL) -> Bool) {
         self.url = url
         self._viewState = viewState
         self.theme = theme
@@ -99,7 +110,7 @@ private struct ReaderView: View {
                 }
             }
             .onAppear {
-                
+                setupLinkNavigation()
             }
             .task(id: url) {
                 do {
@@ -125,12 +136,28 @@ private struct ReaderView: View {
                 }
             }
     }
+    
+    private func setupLinkNavigation() -> Void {
+        content.shouldBlockNavigation = { request -> Bool in
+            if request.navigationType == .linkActivated, let url = request.request.url {
+                return !onLinkClicked(url)
+            }
+            
+            return false
+        }
+    }
 }
 
 extension ArticleView {
     public func theme(_ theme: ReaderTheme) -> Self {
         var copy = self
         copy.theme = theme
+        return copy
+    }
+    
+    public func onLinkClicked(_ perform: @escaping (URL) -> Bool) -> Self {
+        var copy = self
+        copy.onLinkClicked = perform
         return copy
     }
 }
